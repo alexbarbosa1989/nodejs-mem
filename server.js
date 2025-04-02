@@ -32,22 +32,19 @@ app.get("/gctracing", (req, res) => {
     res.json({ gcEvents: [...gcStats] });
 });
 
-
-// Garbage Collection Tracing
-app.get("/gctracing", (req, res) => {
-    res.json({ gcEvents: [...gcStats] });
-});
-
-// OOM Trigger - Forces Memory Exhaustion
-app.get("/oom", (req, res) => {
+// Forces Memory allocation
+app.get("/memory", (req, res) => {
+    const sizeMB = parseInt(req.query.size, 10) || 100; // Default 100MB if no value is passed
+    let memoryHog = [];
+    
     try {
-        let memoryHog = [];
-        for (let i = 0; i < 500000; i++) {
-            memoryHog.push(Buffer.alloc(1024 * 1024)); // Allocate ~500MB
+        for (let i = 0; i < sizeMB; i++) {
+            memoryHog.push(Buffer.alloc(1024 * 1024)); // Allocate ~1MB per iteration
         }
 
-        global.gc?.(); // If Node.js is run with --expose-gc, explicitly trigger GC
-        res.json({ message: "Memory pressure applied, GC should trigger soon." });
+        global.gc?.(); // Force GC if '--expose-gc' is enabled
+
+        res.json({ message: `Allocated ${sizeMB}MB of memory. GC should trigger soon.` });
     } catch (err) {
         res.status(500).json({ error: "OOM simulation failed", details: err.message });
     }
@@ -88,5 +85,5 @@ app.listen(PORT, () => {
     console.log(`Service running on http://localhost:${PORT}`);
     console.log(`Memory stats: http://localhost:${PORT}/memstats`);
     console.log(`GC tracing: http://localhost:${PORT}/gctracing`);
-    console.log(`OOM Trigger: http://localhost:${PORT}/oom`);
+    console.log(`OOM Trigger: http://localhost:${PORT}/memory`);
 });
