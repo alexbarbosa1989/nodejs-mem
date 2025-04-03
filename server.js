@@ -1,36 +1,51 @@
 const express = require("express");
 const { PerformanceObserver, performance } = require("perf_hooks");
 const os = require("os");
-const v8 = require("v8");
+const fs = require("fs");
 
 const app = express();
 let gcStats = new Set();
 const MAX_ENTRIES = 100; // Limit stored GC events
 let memoryHog = []; // making memoryHog global
 
+// get cgroups memory statistics
+function getContainerMemoryStats() {
+    try {
+        const memLimit = fs.readFileSync("/sys/fs/cgroup/memory/memory.limit_in_bytes", "utf8").trim();
+        const memUsage = fs.readFileSync("/sys/fs/cgroup/memory/memory.usage_in_bytes", "utf8").trim();
+        return {
+            memoryUsageMB: (parseInt(memUsage, 10) / (1024 * 1024)).toFixed(2),
+            memoryLimitMB: (parseInt(memLimit, 10) / (1024 * 1024)).toFixed(2),
+        };
+    } catch (err) {
+        return { error: "Unable to read container memory stats." };
+    }
+}
+
 // Track Garbage Collection Events
 const obs = new PerformanceObserver((list) => {
     const entry = list.getEntries()[0];
+    const containerMemory = getContainerMemoryStats();
+
     gcStats.add({
         timestamp: Date.now(),
         gcType: entry.kind === 1 ? "Scavenge" : entry.kind === 2 ? "Mark-Sweep" : "Incremental",
         duration: `${entry.duration.toFixed(2)}ms`,
-        memory: os.freemem(),
-        totalMemory: os.totalmem(),
-        uptime: os.uptime(),
+        memoryUsageMB: containerMemory.memoryUsageMB,
+        memoryLimitMB: containerMemory.memoryLimitMB,
+        uptime: `${(os.uptime() / 60).toFixed(2)} minutes`
     });
 
-    // Ensure we don't store too many events
     if (gcStats.size > MAX_ENTRIES) {
-        gcStats = new Set([...gcStats].slice(-MAX_ENTRIES)); // Keep the latest entries
+        gcStats = new Set([...gcStats].slice(-MAX_ENTRIES));
     }
 });
 
-obs.observe({ entryTypes: ["gc"], buffered: true });
-
-// Garbage Collection Tracing Endpoint
 app.get("/gctracing", (req, res) => {
-    res.json({ gcEvents: [...gcStats] });
+    res.json({ 
+        gcEvents: [...gcStats],
+        containerMemoryStats: getContainerMemoryStats()
+    });
 });
 
 // Forces Memory allocation
