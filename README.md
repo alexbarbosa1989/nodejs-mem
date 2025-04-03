@@ -25,7 +25,10 @@ You can import the image from the Red Hat registry to your project:
 ~~~
 oc import-image nodejs-20:latest --from=registry.access.redhat.com/ubi8/nodejs-20:latest --confirm
 ~~~
-then, you can deploy the application using the initial `oc new-app` command
+then, you can deploy the application using the initial `oc new-app` command:
+~~~
+oc new-app nodejs-20:latest~https://github.com/alexbarbosa1989/nodejs-mem.git 
+~~~
 
 3. Verify that the pod is running correctly
 ~~~
