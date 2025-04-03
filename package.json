@@ -6,9 +6,9 @@
     "scripts": {
       "start": "node server.js",
       "openshift": "nodeshift --expose",
-      "openshift:clean": "nodeshift undeploy --removeAll",
+      "openshift:cleanup": "nodeshift undeploy --removeAll",
       "openshift:dockerbuild": "nodeshift --build.strategy Docker --expose",
-      "openshift:dockerbuild:clean": "nodeshift undeploy --removeAll --build.strategy Docker"
+      "openshift:dockerbuild:cleanup": "nodeshift undeploy --removeAll --build.strategy Docker"
     },
     "dependencies": {
       "express": "^4.18.2",
