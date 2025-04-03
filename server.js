@@ -41,6 +41,9 @@ const obs = new PerformanceObserver((list) => {
     }
 });
 
+// Observe garbage collection events
+obs.observe({ entryTypes: ["gc"], buffered: true });
+
 app.get("/gctracing", (req, res) => {
     res.json({ 
         gcEvents: [...gcStats],

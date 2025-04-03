@@ -12,4 +12,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["node", "server.js"]
+CMD ["node", "--expose-gc", "--trace-gc", "server.js"]
