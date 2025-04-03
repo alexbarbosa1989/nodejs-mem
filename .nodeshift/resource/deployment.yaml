@@ -1,7 +1,6 @@
 spec:
   containers:
     - name: nodejs-mem
-      image: your-image
       resources:
         requests:
           memory: "256Mi"
