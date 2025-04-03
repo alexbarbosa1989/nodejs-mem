@@ -1,6 +1,6 @@
 spec:
   containers:
-    - name: memory-monitor
+    - name: nodejs-mem
       image: your-image
       resources:
         requests:
