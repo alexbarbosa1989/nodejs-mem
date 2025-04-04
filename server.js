@@ -9,7 +9,6 @@ let gcStats = new Set();
 const MAX_ENTRIES = 100; // Limit stored GC events
 let memoryHog = []; // making memoryHog global
 const http = require("http");
-const express = require("express");
 
 app.get("/readurl", (req, res) => {
     const targetHost = req.query.host || "google.com";
