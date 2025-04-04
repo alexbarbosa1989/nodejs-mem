@@ -3,10 +3,50 @@ const { PerformanceObserver, performance } = require("perf_hooks");
 const os = require("os");
 const fs = require("fs");
 
+const PORT = 8080;
 const app = express();
 let gcStats = new Set();
 const MAX_ENTRIES = 100; // Limit stored GC events
 let memoryHog = []; // making memoryHog global
+const http = require("http");
+const express = require("express");
+
+app.get("/readurl", (req, res) => {
+    const targetHost = req.query.host || "google.com";
+    const targetPath = req.query.path || "/";
+
+    const options = {
+        host: targetHost,
+        path: targetPath,
+        timeout: 5000,
+    };
+
+    const request = http.request(options, (response) => {
+        let data = "";
+
+        response.on("data", (chunk) => {
+            data += chunk;
+        });
+
+        response.on("end", () => {
+            res.status(200).json({
+                target: `http://${targetHost}${targetPath}`,
+                contentLength: data.length,
+                preview: data.substring(0, 1000) + "...", // Show only first 1000 chars
+            });
+        });
+    });
+
+    request.on("error", (err) => {
+        res.status(500).json({
+            error: err.message,
+            target: `http://${targetHost}${targetPath}`,
+        });
+    });
+
+    request.end();
+});
+
 
 // Detect and read container memory stats (supports cgroup v1 and v2)
 function getContainerMemoryStats() {
@@ -111,7 +151,6 @@ function bytesToMegabytes(bytes) {
     return (bytes / (1024 * 1024)).toFixed(2);
 }
 
-const PORT = 8080;
 app.listen(PORT, () => {
     console.log(`Service running on http://localhost:${PORT}`);
     console.log(`Memory stats: http://localhost:${PORT}/memstats`);
