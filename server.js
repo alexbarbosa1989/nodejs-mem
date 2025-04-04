@@ -31,7 +31,7 @@ app.get("/readurl", (req, res) => {
             res.status(200).json({
                 target: `http://${targetHost}${targetPath}`,
                 contentLength: data.length,
-                preview: data.substring(0, 1000) + "...", // Show only first 1000 chars
+                preview: data.substring(0, 1000) + "...", // Show first 1000 chars
             });
         });
     });
@@ -55,16 +55,16 @@ function getContainerMemoryStats() {
             const memUsage = fs.readFileSync("/sys/fs/cgroup/memory/memory.usage_in_bytes", "utf8").trim();
             const memLimit = fs.readFileSync("/sys/fs/cgroup/memory/memory.limit_in_bytes", "utf8").trim();
             return {
-                memoryUsageMB: (parseInt(memUsage, 10) / (1024 * 1024)).toFixed(2),
-                memoryLimitMB: (parseInt(memLimit, 10) / (1024 * 1024)).toFixed(2),
+                memoryUsageMB: bytesToMegabytes(parseInt(memUsage, 10)),
+                memoryLimitMB: bytesToMegabytes(parseInt(memLimit, 10)),
             };
         } else if (fs.existsSync("/sys/fs/cgroup/memory.max")) {
             // cgroup v2
             const memUsage = fs.readFileSync("/sys/fs/cgroup/memory.current", "utf8").trim();
             const memLimit = fs.readFileSync("/sys/fs/cgroup/memory.max", "utf8").trim();
             return {
-                memoryUsageMB: (parseInt(memUsage, 10) / (1024 * 1024)).toFixed(2),
-                memoryLimitMB: memLimit === "max" ? "Unlimited" : (parseInt(memLimit, 10) / (1024 * 1024)).toFixed(2),
+                memoryUsageMB: bytesToMegabytes(parseInt(memUsage, 10)),
+                memoryLimitMB: memLimit === "max" ? "Unlimited" : bytesToMegabytes(parseInt(memLimit, 10)),
             };
         }
         return { error: "Cgroup memory stats not found." };
@@ -155,4 +155,5 @@ app.listen(PORT, () => {
     console.log(`Memory stats: http://localhost:${PORT}/memstats`);
     console.log(`GC tracing: http://localhost:${PORT}/gctracing`);
     console.log(`OOM Trigger: http://localhost:${PORT}/memory`);
+    console.log(`Read URL: http://localhost:${PORT}/readurl`);
 });
