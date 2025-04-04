@@ -2,6 +2,7 @@ const express = require("express");
 const { PerformanceObserver, performance } = require("perf_hooks");
 const os = require("os");
 const fs = require("fs");
+const crypto = require('crypto'); //to stress heap usage
 
 const PORT = 8080;
 const app = express();
@@ -106,11 +107,13 @@ app.get("/gctracing", (req, res) => {
 // Forces Memory allocation
 app.get("/memory", (req, res) => {
     const size = parseInt(req.query.size, 10) || 100; // Default to 100MB
-    const sizePerItem = 1024 * 1024; // 1MB in bytes
 
     try {
         for (let i = 0; i < size; i++) {
-            memoryHog.push("X".repeat(sizePerItem)); // Allocating string to the heap
+            // Each push adds ~1MB using ~256K random 8-byte strings
+            memoryHog.push(
+                Array.from({ length: 256 * 1024 }, () => crypto.randomBytes(4).toString("hex"))
+            );
         }
 
         global.gc?.(); // Force GC if '--expose-gc' is enabled
