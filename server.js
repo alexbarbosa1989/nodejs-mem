@@ -56,8 +56,8 @@ const obs = new PerformanceObserver((list) => {
 // Start tracking GC events
 obs.observe({ entryTypes: ["gc"], buffered: true });
 
-// Expose a service at /containergc
-app.get("/containergc", (req, res) => {
+// Expose a service at /gctracing
+app.get("/gctracing", (req, res) => {
     res.json({
         gcEvents: [...gcStats],
         containerMemoryStats: getContainerMemoryStats(),
