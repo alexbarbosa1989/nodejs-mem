@@ -8,27 +8,39 @@ let gcStats = new Set();
 const MAX_ENTRIES = 100; // Limit stored GC events
 let memoryHog = []; // making memoryHog global
 
-// get cgroups memory statistics
+// Detect and read container memory stats (supports cgroup v1 and v2)
 function getContainerMemoryStats() {
     try {
-        const memLimit = fs.readFileSync("/sys/fs/cgroup/memory/memory.limit_in_bytes", "utf8").trim();
-        const memUsage = fs.readFileSync("/sys/fs/cgroup/memory/memory.usage_in_bytes", "utf8").trim();
-        return {
-            memoryUsageMB: (parseInt(memUsage, 10) / (1024 * 1024)).toFixed(2),
-            memoryLimitMB: (parseInt(memLimit, 10) / (1024 * 1024)).toFixed(2),
-        };
+        if (fs.existsSync("/sys/fs/cgroup/memory/memory.usage_in_bytes")) {
+            // cgroup v1
+            const memUsage = fs.readFileSync("/sys/fs/cgroup/memory/memory.usage_in_bytes", "utf8").trim();
+            const memLimit = fs.readFileSync("/sys/fs/cgroup/memory/memory.limit_in_bytes", "utf8").trim();
+            return {
+                memoryUsageMB: (parseInt(memUsage, 10) / (1024 * 1024)).toFixed(2),
+                memoryLimitMB: (parseInt(memLimit, 10) / (1024 * 1024)).toFixed(2),
+            };
+        } else if (fs.existsSync("/sys/fs/cgroup/memory.max")) {
+            // cgroup v2
+            const memUsage = fs.readFileSync("/sys/fs/cgroup/memory.current", "utf8").trim();
+            const memLimit = fs.readFileSync("/sys/fs/cgroup/memory.max", "utf8").trim();
+            return {
+                memoryUsageMB: (parseInt(memUsage, 10) / (1024 * 1024)).toFixed(2),
+                memoryLimitMB: memLimit === "max" ? "Unlimited" : (parseInt(memLimit, 10) / (1024 * 1024)).toFixed(2),
+            };
+        }
+        return { error: "Cgroup memory stats not found." };
     } catch (err) {
         return { error: "Unable to read container memory stats." };
     }
 }
 
-// Track Garbage Collection Events
+// Track GC events using PerformanceObserver
 const obs = new PerformanceObserver((list) => {
     const entry = list.getEntries()[0];
     const containerMemory = getContainerMemoryStats();
 
     gcStats.add({
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
         gcType: entry.kind === 1 ? "Scavenge" : entry.kind === 2 ? "Mark-Sweep" : "Incremental",
         duration: `${entry.duration.toFixed(2)}ms`,
         memoryUsageMB: containerMemory.memoryUsageMB,
@@ -41,13 +53,14 @@ const obs = new PerformanceObserver((list) => {
     }
 });
 
-// Observe garbage collection events
+// Start tracking GC events
 obs.observe({ entryTypes: ["gc"], buffered: true });
 
-app.get("/gctracing", (req, res) => {
-    res.json({ 
+// Expose a service at /containergc
+app.get("/containergc", (req, res) => {
+    res.json({
         gcEvents: [...gcStats],
-        containerMemoryStats: getContainerMemoryStats()
+        containerMemoryStats: getContainerMemoryStats(),
     });
 });
 
