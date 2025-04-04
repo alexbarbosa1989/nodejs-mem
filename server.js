@@ -105,16 +105,17 @@ app.get("/gctracing", (req, res) => {
 
 // Forces Memory allocation
 app.get("/memory", (req, res) => {
-    const sizeMB = parseInt(req.query.size, 10) || 100; // Default to 100MB
-    
+    const size = parseInt(req.query.size, 10) || 100; // Default to 100MB
+    const sizePerItem = 1024 * 1024; // 1MB in bytes
+
     try {
         for (let i = 0; i < sizeMB; i++) {
-            memoryHog.push(Buffer.alloc(1024 * 1024)); // Allocate ~1MB per iteration
+            memoryHog.push("X".repeat(sizePerItem)); // Allocating string to the heap
         }
 
         global.gc?.(); // Force GC if '--expose-gc' is enabled
 
-        res.json({ message: `Allocated ${sizeMB}MB of memory. GC should trigger soon.` });
+        res.json({ message: `Allocated ${size}MB of memory. GC should trigger soon.` });
     } catch (err) {
         res.status(500).json({ error: "OOM simulation failed", details: err.message });
     }
