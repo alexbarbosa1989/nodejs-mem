@@ -109,7 +109,7 @@ app.get("/memory", (req, res) => {
     const sizePerItem = 1024 * 1024; // 1MB in bytes
 
     try {
-        for (let i = 0; i < sizeMB; i++) {
+        for (let i = 0; i < size; i++) {
             memoryHog.push("X".repeat(sizePerItem)); // Allocating string to the heap
         }
 
