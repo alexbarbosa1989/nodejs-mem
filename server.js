@@ -9,6 +9,7 @@ const app = express();
 let gcStats = new Set();
 const MAX_ENTRIES = 100; // Limit stored GC events
 let memoryHog = []; // making memoryHog global
+let memAllocator = [];
 const http = require("http");
 
 app.get("/readurl", (req, res) => {
@@ -110,7 +111,8 @@ app.get("/memory", (req, res) => {
 
     try {
         for (let i = 0; i < size; i++) {
-            // Each push adds ~1MB using ~256K random 8-byte strings
+            memAllocator.push(Buffer.alloc(1024 * 1024)); // Allocate ~1MB per iteration
+            // Each push adds ~1MB using ~256K random 8-byte strings to heap memory
             memoryHog.push(
                 Array.from({ length: 256 * 1024 }, () => crypto.randomBytes(4).toString("hex"))
             );
