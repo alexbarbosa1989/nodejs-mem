@@ -1,5 +1,5 @@
-# Install the app dependencies in a full UBI Node docker image
-FROM registry.access.redhat.com/ubi8/nodejs-20:latest
+# Install from dockerhub alpine image
+FROM node:20-alpine
 
 WORKDIR /app
 
