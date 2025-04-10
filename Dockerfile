@@ -1,5 +1,5 @@
 # Install from dockerhub alpine image
-FROM node:20-alpine
+FROM docker.io/library/node:20-alpine
 
 WORKDIR /app
 
