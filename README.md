@@ -3,7 +3,7 @@
 ## Deployment in OCP (s2i)
 1. Create an OCP project
 ~~~
-oc new-project nodejs-tests
+oc new-project nodejs-no-max-tests
 ~~~
 
 2. Create a new app referencing the current GitHub repository
