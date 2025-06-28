@@ -8,7 +8,7 @@ oc new-project nodejs-tests
 
 2. Create a new app referencing the current GitHub repository
 ~~~
-oc new-app nodejs-20:latest~https://github.com/alexbarbosa1989/nodejs-mem.git 
+oc new-app nodejs-20:latest~https://github.com/alexbarbosa1989/nodejs-mem#no-max-size
 ~~~
 
 If during the deployment process get below error:
@@ -27,7 +27,7 @@ oc import-image nodejs-20:latest --from=registry.access.redhat.com/ubi8/nodejs-2
 ~~~
 then, you can deploy the application using the initial `oc new-app` command:
 ~~~
-oc new-app nodejs-20:latest~https://github.com/alexbarbosa1989/nodejs-mem.git 
+oc new-app nodejs-20:latest~https://github.com/alexbarbosa1989/nodejs-mem#no-max-size
 ~~~
 
 3. Verify that the pod is running correctly
