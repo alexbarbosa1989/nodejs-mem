@@ -29,6 +29,10 @@ then, you can deploy the application using the initial `oc new-app` command:
 ~~~
 oc new-app nodejs-20:latest~https://github.com/alexbarbosa1989/nodejs-mem#no-max-size
 ~~~
+and optionally set resource limits:
+~~~
+oc set resources deployment nodejs-mem --limits=cpu=1,memory=1Gi
+~~~
 
 3. Verify that the pod is running correctly
 ~~~
