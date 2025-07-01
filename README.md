@@ -55,3 +55,7 @@ Memory stats: http://$OCP_ROUTE/memstats
 GC tracing: http://$OCP_ROUTE/gctracing
 OOM Trigger: http://$OCP_ROUTE/memory
 ~~~
+
+### YouTube Demo Video for Container-awareness tests
+[![NodeJS-container](https://github.com/user-attachments/assets/68705ee3-9d05-47e6-a704-ded7b3753343)](https://youtu.be/8ZuC3OEksvw)
+
